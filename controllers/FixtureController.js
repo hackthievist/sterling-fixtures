@@ -1,5 +1,8 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 const _ = require('lodash');
+const moment = require('moment')();
 const Team = require('./promise').TeamPromise;
 const Fixture = require('./promise').FixturePromise;
 const ResponseHelper = require('./ResponseHelper');
@@ -19,9 +22,9 @@ const FixtureController = {
         homeTeam: homeTeam._id, awayTeam: awayTeam._id, startDate: data.startDate, endDate: data.endDate, isDeleted: false,
       });
       if (fixtureExists) return ResponseHelper.json(400, res, 'Duplicate Fixture', fixtureExists);
-      data.fixtureSlug = `${homeTeam.slug}-${awayTeam.slug}`;
-      const gameDate = new Date(data.startDate).getDate();
-      const urlSlug = `${process.env.API_BASE_URL}?details=homeTeam=${homeTeam.slug},awayTeam=${awayTeam.slug},startDate=${gameDate}`;
+      data.fixtureSlug = `${homeTeam.slug}${awayTeam.slug}`;
+      const gameDate = moment.format(data.startDate);
+      const urlSlug = `${process.env.API_BASE_URL}/fixture?details=fixtureSlug=${data.fixtureSlug},startDate=${gameDate}`;
       data.url = await FirebaseService.getShortLink(urlSlug);
       const fixture = await Fixture.create(data);
       const foundFixture = await Fixture.findOne({ _id: fixture._id, isDeleted: false });
@@ -34,8 +37,22 @@ const FixtureController = {
   async read(req, res) {
     try {
       const fixtureId = req.params.id;
-      const queryData = { _id: fixtureId, isDeleted: false };
-      const fixture = await Fixture.findOne(queryData);
+      let queryData;
+      let fixture;
+      if (req.query.details) {
+        const queryString = req.query;
+        const splitQuery = queryString.details.split(',');
+        queryData = splitQuery.reduce((stringObject, string) => {
+          const obj = string.split('=');
+          stringObject[obj[0]] = obj[1];
+          return stringObject;
+        }, {});
+        fixture = await Fixture.findOne(queryData);
+        if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
+        return ResponseHelper.json(200, res, 'Fixture successfully retrieved', fixture);
+      }
+      queryData = { _id: fixtureId, isDeleted: false };
+      fixture = await Fixture.findOne(queryData);
       if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
       return ResponseHelper.json(200, res, 'Fixture successfully retrieved', fixture);
     } catch (err) {

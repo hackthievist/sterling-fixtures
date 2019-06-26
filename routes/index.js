@@ -23,7 +23,7 @@ router.patch('/team/:id', TeamController.update);
 router.delete('/team/:id', TeamController.delete);
 
 router.post('/fixture', FixtureController.create);
-router.get('/fixture/:id', FixtureController.read);
+router.get(['/fixture/:id', '/fixture'], FixtureController.read);
 router.get('/get-fixtures', FixtureController.getFixtures);
 router.patch('/fixture/:id', FixtureController.update);
 router.patch('/fixture/cancel/:id', FixtureController.cancel);
