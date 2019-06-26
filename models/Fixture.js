@@ -31,6 +31,9 @@ const fixtureSchema = new Schema({
     type: Date,
     required: true,
   },
+  url: {
+    type: String,
+  },
   createdAt: Date,
   updatedAt: Date,
   deletedAt: Date,

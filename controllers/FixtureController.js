@@ -3,6 +3,7 @@ const _ = require('lodash');
 const Team = require('./promise').TeamPromise;
 const Fixture = require('./promise').FixturePromise;
 const ResponseHelper = require('./ResponseHelper');
+const FirebaseService = require('../services/FirebaseService');
 
 const FixtureController = {
   async create(req, res) {
@@ -15,10 +16,13 @@ const FixtureController = {
       if (!homeTeam || !awayTeam) return ResponseHelper.json(400, res, 'Two teams must be provided');
       if (_.isEqual(homeTeam, awayTeam)) return ResponseHelper.json(400, res, 'A team cannot play against itself');
       const fixtureExists = await Fixture.findOne({
-        homeTeam: homeTeam.id, awayTeam: awayTeam.id, date: data.date, isDeleted: false,
+        homeTeam: homeTeam._id, awayTeam: awayTeam._id, startDate: data.startDate, endDate: data.endDate, isDeleted: false,
       });
       if (fixtureExists) return ResponseHelper.json(400, res, 'Duplicate Fixture', fixtureExists);
       data.fixtureSlug = `${homeTeam.slug}-${awayTeam.slug}`;
+      const gameDate = new Date(data.startDate).getDate();
+      const urlSlug = `${process.env.API_BASE_URL}?details=homeTeam=${homeTeam.slug},awayTeam=${awayTeam.slug},startDate=${gameDate}`;
+      data.url = await FirebaseService.getShortLink(urlSlug);
       const fixture = await Fixture.create(data);
       const foundFixture = await Fixture.findOne({ _id: fixture._id, isDeleted: false });
       return ResponseHelper.json(201, res, 'Fixture created successfully', foundFixture);
@@ -48,7 +52,6 @@ const FixtureController = {
       if (!fixtures.length) return ResponseHelper.json(404, res, 'There are no fixtures', fixtures);
       return ResponseHelper.json(200, res, 'Fixtures successfully retrieved', fixtures);
     } catch (err) {
-      console.log(err);
       return ResponseHelper.error(err, res);
     }
   },
