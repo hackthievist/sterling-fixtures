@@ -1,5 +1,8 @@
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
+const cache = require('express-redis-cache')({
+  host: process.env.REDIS_HOST, auth_pass: process.env.REDIS_PASSWORD, port: process.env.REDIS_PORT,
+});
 const User = require('./promise').UserPromise;
 const ResponseHelper = require('./ResponseHelper');
 
@@ -11,6 +14,7 @@ const UserController = {
       data.updatedAt = new Date();
       if (!data.password) return ResponseHelper.json(400, res, 'Password is required');
       if (!data.email) return ResponseHelper.json(400, res, 'Email is required');
+      if (!data.userName) return ResponseHelper.json(400, res, 'Username is required');
       const userFound = await User.findOne({ email: data.email });
       if (userFound) return ResponseHelper.json(400, res, 'Email has been taken');
       data.password = bcrypt.hashSync(data.password, 10);
@@ -23,11 +27,24 @@ const UserController = {
 
   async read(req, res) {
     try {
+      cache.route();
       const userId = req.params.id;
       const queryData = { _id: userId, isDeleted: false };
       const user = await User.findOne(queryData);
       if (!user) return ResponseHelper.json(404, res, 'User not found');
       return ResponseHelper.json(200, res, 'User successfully retrieved', user);
+    } catch (err) {
+      return ResponseHelper.error(err, res);
+    }
+  },
+
+  async list(req, res) {
+    try {
+      cache.route();
+      const queryData = { isDeleted: false };
+      const users = await User.find(queryData);
+      if (users.length === 0) return ResponseHelper.json(404, res, 'No users found');
+      return ResponseHelper.json(200, res, 'Users successfully retrieved', users);
     } catch (err) {
       return ResponseHelper.error(err, res);
     }

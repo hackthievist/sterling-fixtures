@@ -1,32 +1,42 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-param-reassign */
-/* eslint-disable no-underscore-dangle */
 const _ = require('lodash');
 const moment = require('moment')();
+const cache = require('express-redis-cache')({
+  host: process.env.REDIS_HOST, auth_pass: process.env.REDIS_PASSWORD, port: process.env.REDIS_PORT,
+});
 const Team = require('./promise').TeamPromise;
 const Fixture = require('./promise').FixturePromise;
 const ResponseHelper = require('./ResponseHelper');
 const FirebaseService = require('../services/FirebaseService');
+const ElasticService = require('../services/ElasticService');
+
+const elasticIndex = 'fixture';
 
 const FixtureController = {
   async create(req, res) {
     try {
       const data = req.body;
-      data.createdAt = new Date();
-      data.updatedAt = new Date();
       const homeTeam = await Team.findOne({ _id: data.homeTeam, isDeleted: false });
       const awayTeam = await Team.findOne({ _id: data.awayTeam, isDeleted: false });
-      if (!homeTeam || !awayTeam) return ResponseHelper.json(400, res, 'Two teams must be provided');
+      if (!homeTeam || !awayTeam) return ResponseHelper.json(400, res, 'Please provide valid home and away teams');
       if (_.isEqual(homeTeam, awayTeam)) return ResponseHelper.json(400, res, 'A team cannot play against itself');
       const fixtureExists = await Fixture.findOne({
         homeTeam: homeTeam._id, awayTeam: awayTeam._id, startDate: data.startDate, endDate: data.endDate, isDeleted: false,
       });
       if (fixtureExists) return ResponseHelper.json(400, res, 'Duplicate Fixture', fixtureExists);
-      data.fixtureSlug = `${homeTeam.slug}${awayTeam.slug}`;
+      if (!data.endDate || !data.startDate) return ResponseHelper.json(400, res, 'Provide valid start and end dates');
+      const startDate = new Date(data.startDate);
+      const endDate = new Date(data.endDate);
+      const currentDate = new Date();
+      if (endDate - startDate < 0) return ResponseHelper.json(400, res, 'The end date has to be later than the start date');
+      if (startDate - currentDate < 0 || endDate - currentDate < 0) return ResponseHelper.json(400, res, 'The start and end dates have to be in the future');
+      if (!data.fixtureSlug) data.fixtureSlug = `${homeTeam.slug}${awayTeam.slug}`;
       const gameDate = moment.format(data.startDate);
       const urlSlug = `${process.env.API_BASE_URL}/fixture?details=fixtureSlug=${data.fixtureSlug},startDate=${gameDate}`;
       data.url = await FirebaseService.getShortLink(urlSlug);
       const fixture = await Fixture.create(data);
+      await ElasticService.addObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
       const foundFixture = await Fixture.findOne({ _id: fixture._id, isDeleted: false });
       return ResponseHelper.json(201, res, 'Fixture created successfully', foundFixture);
     } catch (error) {
@@ -36,6 +46,7 @@ const FixtureController = {
 
   async read(req, res) {
     try {
+      cache.route();
       const fixtureId = req.params.id;
       let queryData;
       let fixture;
@@ -56,12 +67,14 @@ const FixtureController = {
       if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
       return ResponseHelper.json(200, res, 'Fixture successfully retrieved', fixture);
     } catch (err) {
+      console.log(err);
       return ResponseHelper.error(err, res);
     }
   },
 
   async getFixtures(req, res) {
     try {
+      cache.route();
       const { status } = req.query;
       const queryData = { isDeleted: false };
       if (status) queryData.status = status;
@@ -81,6 +94,7 @@ const FixtureController = {
       updateData.updatedAt = new Date();
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
       if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
+      await ElasticService.updateObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
       return ResponseHelper.json(200, res, 'Fixture successfully updated', fixture);
     } catch (err) {
       return ResponseHelper.error(err, res);
@@ -92,13 +106,12 @@ const FixtureController = {
       const fixtureId = req.params.id;
       const queryData = { _id: fixtureId, isDeleted: false };
       const foundFixture = await Fixture.findOne(queryData);
-      if (!foundFixture) return ResponseHelper.json(404, res, 'Fixture does not exist');
-      if (foundFixture.status === 'completed') return ResponseHelper.json(400, res, 'Completed matches cannot be cancelled');
-      if (foundFixture.status === 'cancelled') return ResponseHelper.json(400, res, 'Match was previously cancelled');
+      if (!foundFixture) return ResponseHelper.json(404, res, 'Fixture not found');
+      if (foundFixture.status === 'cancelled') return ResponseHelper.json(400, res, 'Match has been previously cancelled', foundFixture);
       const updateData = { status: 'cancelled' };
-      updateData.updatedAt = new Date();
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
-      return ResponseHelper.json(200, res, 'Fixture successfully updated', fixture);
+      await ElasticService.updateObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
+      return ResponseHelper.json(200, res, 'Fixture successfully cancelled', fixture);
     } catch (err) {
       return ResponseHelper.error(err, res);
     }
@@ -110,7 +123,7 @@ const FixtureController = {
       const queryData = { _id: fixtureId, isDeleted: false };
       const foundFixture = await Fixture.findOne(queryData);
       const updateData = _.pick(req.body, ['startDate', 'endDate']);
-      if (!foundFixture) return ResponseHelper.json(404, res, 'Fixture does not exist');
+      if (!foundFixture) return ResponseHelper.json(404, res, 'Fixture not found');
       if (!_.has(updateData, 'startDate')) updateData.startDate = foundFixture.startDate;
       if (!_.has(updateData, 'endDate')) updateData.endDate = foundFixture.endDate;
       const startDate = new Date(updateData.startDate);
@@ -122,6 +135,7 @@ const FixtureController = {
       updateData.status = 'pending';
       updateData.updatedAt = new Date();
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
+      await ElasticService.updateObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
       return ResponseHelper.json(200, res, 'Fixture successfully postponed', fixture);
     } catch (err) {
       return ResponseHelper.error(err, res);
@@ -136,6 +150,7 @@ const FixtureController = {
       if (!foundFixture) return ResponseHelper.json(404, res, 'Fixture not found');
       const updateData = { isDeleted: true, deletedAt: new Date() };
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
+      await ElasticService.deleteObject(elasticIndex, 'fixture', fixture._id);
       return ResponseHelper.json(200, res, 'Fixture successfully deleted', fixture);
     } catch (err) {
       return ResponseHelper.error(err, res);

@@ -43,6 +43,15 @@ const fixtureSchema = new Schema({
   },
 });
 
+// add timestamps before saving to db
+fixtureSchema.pre('save', function (next) {
+  if (this.isNew) {
+    this.createdAt = new Date();
+  }
+  this.updatedAt = new Date();
+  next();
+});
+
 const Fixture = mongoose.model('Fixture', fixtureSchema);
 
 module.exports = Fixture;

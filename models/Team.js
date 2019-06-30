@@ -7,7 +7,10 @@ const teamSchema = new Schema({
     type: String,
     required: true,
   },
-  slug: { type: String, required: true },
+  slug: {
+    type: String,
+    required: true,
+  },
   createdAt: Date,
   updatedAt: Date,
   deletedAt: Date,
@@ -15,6 +18,15 @@ const teamSchema = new Schema({
     type: Boolean,
     default: false,
   },
+});
+
+// add timestamps before saving to db
+teamSchema.pre('save', function (next) {
+  if (this.isNew) {
+    this.createdAt = new Date();
+  }
+  this.updatedAt = new Date();
+  next();
 });
 
 const Team = mongoose.model('Team', teamSchema);

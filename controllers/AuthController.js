@@ -3,7 +3,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const ResponseHelper = require('./ResponseHelper');
-const User = require('../models/User');
+const User = require('../controllers/promise').UserPromise;
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -25,14 +25,14 @@ const Auth = {
 
   async isAuthenticated(req, res, next) {
     try {
+      if (!req.headers.authorization) return ResponseHelper.json(401, res, 'Authorization token not found');
       const parts = req.headers.authorization.split(' ');
       if (parts.length === 2) {
         const scheme = parts[0];
         const credentials = parts[1];
         if (/^bearer$/i.test(scheme)) {
           const decoded = await jwt.verify(credentials, jwtSecret);
-          // eslint-disable-next-line no-underscore-dangle
-          const user = await User.findOne({ _id: decoded._id, isDeleted: false });
+          const user = await User.findOne({ _id: decoded.data._id, isDeleted: false });
           if (!user) return ResponseHelper.json(404, res, 'User from token does not exist');
           req.user = user;
           return next();

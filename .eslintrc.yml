@@ -19,4 +19,6 @@ rules:
     "exports": "always-multiline",
     "functions": "ignore"
   }]
+  no-underscore-dangle: 0
   no-plusplus: 0
+  func-names: 0

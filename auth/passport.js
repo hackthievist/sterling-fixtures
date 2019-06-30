@@ -1,4 +1,3 @@
-/* eslint-disable func-names */
 const LocalStrategy = require('passport-local');
 const User = require('../controllers/promise').UserPromise;
 

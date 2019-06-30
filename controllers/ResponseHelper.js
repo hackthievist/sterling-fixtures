@@ -12,10 +12,11 @@ const ResponseHelper = {
   },
 
   async error(err, responseObject) {
-    return responseObject.status(500).send({
+    const error = await responseObject.status(500).send({
       message: 'An error occurred',
       error: err,
     });
+    return error;
   },
 };
 

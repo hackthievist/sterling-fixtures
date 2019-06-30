@@ -10,7 +10,7 @@ require('dotenv').config();
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 
-const database = process.env.MONGO_URI;
+const database = process.env.NODE_ENV !== 'test' ? process.env.MONGO_URI : process.env.MONGO_TEST_URI;
 
 const app = express();
 
@@ -33,12 +33,12 @@ app.use('/users', usersRouter);
 
 mongoose.connect(database, { useNewUrlParser: true }, (err, client) => {
   if (err) throw new Error(err);
-  console.log('Mongodb Connection passed');
+  return 'Mongodb Connection passed';
 });
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 const db = mongoose.connection;
-db.once('open', () => console.log('Connected to Mongodb'));
+db.once('open', () => 'Connected to Mongodb');
 // check if error
 db.on('error', console.error.bind(console, 'Mongodb connection error:'));
 

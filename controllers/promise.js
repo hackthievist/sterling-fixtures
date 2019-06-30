@@ -124,6 +124,16 @@ class TeamPromise {
       });
     });
   }
+
+  static delete(param) {
+    return new Promise((resolve, reject) => {
+      Team.remove(param).then((res) => {
+        resolve(res);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
 }
 
 // fixture promise
@@ -178,6 +188,16 @@ class FixturePromise {
   static findOneAndDelete(param) {
     return new Promise((resolve, reject) => {
       Fixture.findOneAndDelete(param).then((res) => {
+        resolve(res);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  }
+
+  static delete(param) {
+    return new Promise((resolve, reject) => {
+      Fixture.remove(param).then((res) => {
         resolve(res);
       }).catch((err) => {
         reject(err);
