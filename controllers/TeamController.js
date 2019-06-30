@@ -6,7 +6,7 @@ const ResponseHelper = require('./ResponseHelper');
 const ElasticService = require('../services/ElasticService');
 const helpers = require('../helpers');
 
-const elasticIndex = `${config.elasticsearch.ES_INDEX_PREFIX}-team`;
+const elasticIndex = `${config.elasticsearch.indexPrefix}-team`;
 
 const TeamController = {
   async create(req, res) {

@@ -24,5 +24,6 @@ module.exports = {
   },
   elasticsearch: {
     host: process.env.ELASTIC_HOST,
+    indexPrefix: process.env.ELASTIC_PREFIX,
   },
 };
