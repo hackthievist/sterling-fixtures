@@ -106,6 +106,7 @@ describe('FixtureController', () => {
       });
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(201)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture created successfully');
@@ -124,6 +125,7 @@ describe('FixtureController', () => {
       const newFixtureSlug = `${dbData.homeTeam.slug}${dbData.awayTeam.slug}`;
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(201)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture created successfully');
@@ -136,6 +138,7 @@ describe('FixtureController', () => {
       delete newFixture.homeTeam;
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(400)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'Please provide valid home and away teams');
@@ -145,6 +148,7 @@ describe('FixtureController', () => {
       const newFixture = fixtureProvider.getRecord({ homeTeam: dbData.homeTeam._id, awayTeam: dbData.homeTeam._id, status: 'pending' });
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(400)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'A team cannot play against itself');
@@ -159,6 +163,7 @@ describe('FixtureController', () => {
       delete newFixture.endDate;
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(400)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'Provide valid start and end dates');
@@ -174,6 +179,7 @@ describe('FixtureController', () => {
       });
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(400)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'The end date has to be later than the start date');
@@ -189,6 +195,7 @@ describe('FixtureController', () => {
       });
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(400)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'The start and end dates have to be in the future');
@@ -198,6 +205,7 @@ describe('FixtureController', () => {
       const newFixture = dbData.fixture;
       const response = await request(app)
         .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(400)
         .send(newFixture);
       expect(response.body).to.be.an('object').with.property('message', 'Duplicate Fixture');
@@ -244,6 +252,7 @@ describe('FixtureController', () => {
     it('should return 200: Fixture updated successfully', async () => {
       const response = await request(app)
         .patch(`/fixture/${dbData.fixture._id}`)
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200)
         .send(updateData);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture successfully updated');
@@ -257,6 +266,7 @@ describe('FixtureController', () => {
       const randomId = mongoose.Types.ObjectId(idData);
       const response = await request(app)
         .patch(`/fixture/${randomId}`)
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(404);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture not found');
     });
@@ -266,6 +276,7 @@ describe('FixtureController', () => {
     it('should return 200: Fixture successfully cancelled', async () => {
       const response = await request(app)
         .patch(`/fixture/cancel/${dbData.fixture._id}`)
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture successfully cancelled');
       expect(response.body.data).to.be.an('object').and.contain.keys(requiredKeys);
@@ -278,6 +289,7 @@ describe('FixtureController', () => {
       const randomId = mongoose.Types.ObjectId(idData);
       const response = await request(app)
         .patch(`/fixture/cancel/${randomId}`)
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(404);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture not found');
     });
@@ -286,6 +298,7 @@ describe('FixtureController', () => {
       try {
         const response = await request(app)
           .patch(`/fixture/cancel/${dbData.cancelledFixture._id}`)
+          .set('Authorization', `Bearer ${tokenData}`)
           .expect(400);
         expect(response.body).to.be.an('object').with.property('message', 'Match has been previously cancelled');
         expect(response.body.data).to.be.an('object').and.contain.keys(requiredKeys);
@@ -307,6 +320,7 @@ describe('FixtureController', () => {
         const updateData = { startDate, endDate };
         const response = await request(app)
           .patch(`/fixture/postpone/${dbData.fixture._id}`)
+          .set('Authorization', `Bearer ${tokenData}`)
           .expect(200)
           .send(updateData);
         expect(response.body).to.be.an('object').with.property('message', 'Fixture successfully postponed');
@@ -324,6 +338,7 @@ describe('FixtureController', () => {
         const randomId = mongoose.Types.ObjectId(idData);
         const response = await request(app)
           .patch(`/fixture/postpone/${randomId}`)
+          .set('Authorization', `Bearer ${tokenData}`)
           .expect(404);
         expect(response.body).to.be.an('object').with.property('message', 'Fixture not found');
       } catch (err) {
@@ -340,6 +355,7 @@ describe('FixtureController', () => {
         const updateData = { startDate, endDate };
         const response = await request(app)
           .patch(`/fixture/postpone/${dbData.fixture._id}`)
+          .set('Authorization', `Bearer ${tokenData}`)
           .expect(400)
           .send(updateData);
         expect(response.body).to.be.an('object').with.property('message', 'The postponed dates have to be in the future');
@@ -357,6 +373,7 @@ describe('FixtureController', () => {
         const updateData = { startDate, endDate };
         const response = await request(app)
           .patch(`/fixture/postpone/${dbData.fixture._id}`)
+          .set('Authorization', `Bearer ${tokenData}`)
           .expect(400)
           .send(updateData);
         expect(response.body).to.be.an('object').with.property('message', 'The end date has to be later than the start date');
@@ -370,6 +387,7 @@ describe('FixtureController', () => {
     it('should return 200: Fixture deleted successfully', async () => {
       const response = await request(app)
         .delete(`/fixture/${dbData.fixture._id}`)
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture successfully deleted');
       expect(response.body.data).to.be.an('object').and.contain.keys(requiredKeys);
@@ -381,6 +399,7 @@ describe('FixtureController', () => {
       const randomId = mongoose.Types.ObjectId(idData);
       const response = await request(app)
         .delete(`/fixture/${randomId}`)
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(404);
       expect(response.body).to.be.an('object').with.property('message', 'Fixture not found');
     });
