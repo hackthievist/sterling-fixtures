@@ -38,7 +38,7 @@ describe('FixtureController', () => {
     const cancelledFixtureData = fixtureProvider.getRecord({ homeTeam: dbData.homeTeam._id, awayTeam: dbData.awayTeam._id, status: 'cancelled' });
     const cancelledFixture = await Fixture.create(cancelledFixtureData);
     dbData.cancelledFixture = cancelledFixture;
-    const userData = userProvider.getRecord();
+    const userData = userProvider.getRecord({ role: 'admin' });
     const user = await User.create(userData);
     dbData.user = user;
   };
