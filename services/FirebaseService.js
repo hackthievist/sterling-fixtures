@@ -1,7 +1,8 @@
 const fetch = require('node-fetch');
+const config = require('../config');
 
-const firebaseApiUrl = process.env.FIREBASE_DYNAMIC_LINK_API_URL;
-const firebaseAppUrl = process.env.FIREBASE_DYNAMIC_LINK_APP_URL;
+const firebaseApiUrl = config.firebase.apiUrl;
+const firebaseAppUrl = config.firebase.appUrl;
 
 const FirebaseService = {
   async getShortLink(link) {

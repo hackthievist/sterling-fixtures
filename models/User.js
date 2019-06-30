@@ -1,5 +1,8 @@
+/* eslint-disable consistent-return */
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+
+const SALT_ROUNDS = 10;
 
 const { Schema } = mongoose;
 
@@ -8,10 +11,25 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  userName: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: String,
+  userName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    required: true,
+    enum: ['user', 'admin'],
+  },
   createdAt: Date,
   updatedAt: Date,
   deletedAt: Date,
@@ -19,6 +37,19 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
+});
+
+userSchema.pre('save', function (next) {
+  const user = this;
+  if (!user.isModified('password')) return next();
+  bcrypt.genSalt(SALT_ROUNDS, (err, salt) => {
+    if (err) return next(err);
+    bcrypt.hash(user.password, salt, (error, hash) => {
+      if (err) return next(error);
+      user.password = hash;
+      next();
+    });
+  });
 });
 
 userSchema.methods.validatePassword = function (password) {

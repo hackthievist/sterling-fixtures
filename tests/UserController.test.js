@@ -1,30 +1,45 @@
 const chai = require('chai');
 const request = require('supertest');
-const mongoose = require('mongoose');
-const sinon = require('sinon');
 const User = require('../models/User');
 const app = require('../app');
 const userProvider = require('./fixtures/user');
-const ElasticService = require('../services/ElasticService');
+const tokenProvider = require('./fixtures/token');
 
 const { expect } = chai;
 
-// chai.use(chaiHttp);
 const dbData = {};
+let tokenData;
+let invalidTokenData;
+let nonAdminTokenData;
 const requiredKeys = ['userName', 'email', 'password'];
 describe('UserController', () => {
   const clearDb = async () => {
-    await User.remove();
+    await User.deleteMany();
   };
 
   const setUp = async () => {
-    const userData = userProvider.getRecord();
+    const userData = userProvider.getRecord({ role: 'admin' });
     const user = await User.create(userData);
     dbData.user = user;
+
+    const nonAdminUserData = userProvider.getRecord({ role: 'user' });
+    const nonAdminUser = await User.create(nonAdminUserData);
+    dbData.nonAdminUser = nonAdminUser;
+
+    const deletedUserData = userProvider.getRecord({ isDeleted: true });
+    const deletedUser = await User.create(deletedUserData);
+    dbData.deletedUser = deletedUser;
+  };
+
+  const getToken = () => {
+    tokenData = tokenProvider.getToken(dbData.user);
+    invalidTokenData = tokenProvider.getToken(dbData.deletedUser);
+    nonAdminTokenData = tokenProvider.getToken(dbData.nonAdminUser);
   };
 
   beforeAll(clearDb);
   beforeEach(setUp);
+  beforeEach(getToken);
   afterEach(clearDb);
 
   describe('#create()', () => {
@@ -68,45 +83,54 @@ describe('UserController', () => {
       expect(response.body).to.be.an('object').with.property('message', 'Email is required');
     });
 
-    it('should return 400: Email has been taken', async () => {
-      const newUser = userProvider.getRecord({ email: dbData.user.email });
+    it('should return 400: Email and username have been taken', async () => {
+      const newUser = userProvider.getRecord({ email: dbData.user.email, userName: dbData.user.userName });
       const response = await request(app)
         .post('/user')
         .expect(400)
         .send(newUser);
-      expect(response.body).to.be.an('object').with.property('message', 'Email has been taken');
+      expect(response.body).to.be.an('object').with.property('message', 'Email and username have been taken');
     });
   });
 
   describe('#read()', () => {
     it('should return 200: User successfully retrieved', async () => {
       const response = await request(app)
-        .get(`/user/${dbData.user._id}`)
+        .get('/user')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'User successfully retrieved');
       expect(response.body.data).to.be.an('object').and.contains.keys(requiredKeys);
       expect(response.body.data._id).to.equals(dbData.user._id.toString());
     });
 
-    it('should return 404: User not found', async () => {
-      const idData = userProvider.getId();
-      const randomId = mongoose.Types.ObjectId(idData);
+    it('should return 401: User from token does not exist', async () => {
       const response = await request(app)
-        .get(`/user/${randomId}`)
-        .expect(404);
-      expect(response.body).to.be.an('object').with.property('message', 'User not found');
+        .get('/user')
+        .set('Authorization', `Bearer ${invalidTokenData}`)
+        .expect(401);
+      expect(response.body).to.be.an('object').with.property('message', 'User from token does not exist');
     });
   });
 
   describe('#list()', () => {
     it('should return 200: Users successfully retrieved', async () => {
       const response = await request(app)
-        .get('/users')
+        .get('/user/all')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'Users successfully retrieved');
-      expect(response.body.data).to.be.an('array').with.lengthOf(1);
+      expect(response.body.data).to.be.an('array').with.lengthOf(2);
       expect(response.body.data[0]).to.be.an('object').and.contains.keys(requiredKeys);
       expect(response.body.data[0]._id).to.equals(dbData.user._id.toString());
+    });
+
+    it('should return 401: Unauthorized: Admin Users only', async () => {
+      const response = await request(app)
+        .get('/user/all')
+        .set('Authorization', `Bearer ${nonAdminTokenData}`)
+        .expect(401);
+      expect(response.body).to.be.an('object').with.property('message', 'Unauthorized: Admin Users only');
     });
   });
 
@@ -114,7 +138,8 @@ describe('UserController', () => {
     const newUser = userProvider.getRecord();
     it('should return 200: User updated successfully', async () => {
       const response = await request(app)
-        .patch(`/user/${dbData.user._id}`)
+        .patch('/user')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200)
         .send(newUser);
       expect(response.body).to.be.an('object').with.property('message', 'User successfully updated');
@@ -122,34 +147,33 @@ describe('UserController', () => {
       expect(response.body.data._id).to.equals(dbData.user._id.toString());
     });
 
-    it('should return 404: User not found', async () => {
-      const idData = userProvider.getId();
-      const randomId = mongoose.Types.ObjectId(idData);
+    it('should return 404: User from token does not exist', async () => {
       const response = await request(app)
-        .patch(`/user/${randomId}`)
-        .expect(404)
+        .patch('/user')
+        .set('Authorization', `Bearer ${invalidTokenData}`)
+        .expect(401)
         .send(newUser);
-      expect(response.body).to.be.an('object').with.property('message', 'User not found');
+      expect(response.body).to.be.an('object').with.property('message', 'User from token does not exist');
     });
   });
 
   describe('#delete()', () => {
     it('should return 200: User deleted successfully', async () => {
       const response = await request(app)
-        .delete(`/user/${dbData.user._id}`)
+        .delete('/user')
+        .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'User successfully deleted');
       expect(response.body.data).to.be.an('object').and.contain.keys(requiredKeys);
       expect(response.body.data._id).to.equals(dbData.user._id.toString());
     });
 
-    it('should return 404: User not found', async () => {
-      const idData = userProvider.getId();
-      const randomId = mongoose.Types.ObjectId(idData);
+    it('should return 404: User from token does not exist', async () => {
       const response = await request(app)
-        .delete(`/user/${randomId}`)
-        .expect(404);
-      expect(response.body).to.be.an('object').with.property('message', 'User not found');
+        .delete('/user')
+        .set('Authorization', `Bearer ${invalidTokenData}`)
+        .expect(401);
+      expect(response.body).to.be.an('object').with.property('message', 'User from token does not exist');
     });
   });
 });

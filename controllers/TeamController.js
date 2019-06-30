@@ -1,6 +1,5 @@
-const cache = require('express-redis-cache')({
-  host: process.env.REDIS_HOST, auth_pass: process.env.REDIS_PASSWORD, port: process.env.REDIS_PORT,
-});
+const config = require('../config');
+const cache = require('express-redis-cache')(config.redis);
 const _ = require('lodash');
 const Team = require('./promise').TeamPromise;
 const ResponseHelper = require('./ResponseHelper');
@@ -16,7 +15,7 @@ const TeamController = {
       if (!data.name) return ResponseHelper.json(400, res, 'Team name is required');
       if (!data.slug) data.slug = helpers.cleanSlug(_.pick(data, ['name', 'slug']));
       const team = await Team.create(data);
-      // await ElasticService.addObject(elasticIndex, 'team', team, ['name', 'slug']);
+      await ElasticService.addObject(elasticIndex, 'team', team, ['name', 'slug']);
       return ResponseHelper.json(201, res, 'Team created successfully', team);
     } catch (error) {
       return ResponseHelper.error(error, res);
@@ -53,7 +52,6 @@ const TeamController = {
       const teamId = req.params.id;
       const queryData = { _id: teamId, isDeleted: false };
       const updateData = req.body;
-      // updateData.updatedAt = new Date();
       const team = await Team.findOneAndUpdate(queryData, updateData);
       if (!team) return ResponseHelper.json(404, res, 'Team not found');
       await ElasticService.updateObject(elasticIndex, 'team', team, ['name', 'slug']);

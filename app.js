@@ -8,7 +8,11 @@ const passport = require('passport');
 require('dotenv').config();
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
+const teamRouter = require('./routes/team');
+const userRouter = require('./routes/user');
+const fixtureRouter = require('./routes/fixture');
+const searchRouter = require('./routes/search');
 
 const database = process.env.NODE_ENV !== 'test' ? process.env.MONGO_URI : process.env.MONGO_TEST_URI;
 
@@ -29,7 +33,11 @@ app.use(passport.session());
 require('./auth/passport')(passport);
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/auth', authRouter);
+app.use('/user', userRouter);
+app.use('/team', teamRouter);
+app.use('/fixture', fixtureRouter);
+app.use('/search', searchRouter);
 
 mongoose.connect(database, { useNewUrlParser: true }, (err, client) => {
   if (err) throw new Error(err);
@@ -52,7 +60,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = process.env.NODE_ENV === 'development' ? err : {};
 
   // render the error page
   res.status(err.status || 500);

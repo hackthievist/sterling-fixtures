@@ -12,6 +12,7 @@ function getRecord(overrides) {
     password: chance.string(),
     email: chance.email(),
     role: chance.pickone(['admin', 'user']),
+    isDeleted: false,
   });
 }
 

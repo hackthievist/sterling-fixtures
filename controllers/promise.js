@@ -127,7 +127,7 @@ class TeamPromise {
 
   static delete(param) {
     return new Promise((resolve, reject) => {
-      Team.remove(param).then((res) => {
+      Team.deleteMany(param).then((res) => {
         resolve(res);
       }).catch((err) => {
         reject(err);
@@ -197,7 +197,7 @@ class FixturePromise {
 
   static delete(param) {
     return new Promise((resolve, reject) => {
-      Fixture.remove(param).then((res) => {
+      Fixture.deleteMany(param).then((res) => {
         resolve(res);
       }).catch((err) => {
         reject(err);

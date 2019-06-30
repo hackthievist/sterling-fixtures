@@ -2,7 +2,6 @@ const chai = require('chai');
 const request = require('supertest');
 const mongoose = require('mongoose');
 const sinon = require('sinon');
-const jwt = require('jsonwebtoken');
 const Fixture = require('../models/Fixture');
 const Team = require('../models/Team');
 const User = require('../models/User');
@@ -10,6 +9,7 @@ const app = require('../app');
 const fixtureProvider = require('./fixtures/fixture');
 const teamProvider = require('./fixtures/team');
 const userProvider = require('./fixtures/user');
+const tokenProvider = require('./fixtures/token');
 const firebaseLinksProvider = require('./fixtures/firebase-links');
 const ElasticService = require('../services/ElasticService');
 const FirebaseService = require('../services/FirebaseService');
@@ -21,8 +21,8 @@ let tokenData;
 const requiredKeys = ['homeTeam', 'awayTeam', 'fixtureSlug'];
 describe('FixtureController', () => {
   const clearDb = async () => {
-    await Fixture.remove();
-    await Team.remove();
+    await Fixture.deleteMany();
+    await Team.deleteMany();
   };
 
   const setUp = async () => {
@@ -44,7 +44,7 @@ describe('FixtureController', () => {
   };
 
   const getToken = async () => {
-    tokenData = await jwt.sign({ data: dbData.user }, process.env.JWT_SECRET, { expiresIn: 60000 });
+    tokenData = tokenProvider.getToken(dbData.user);
   };
 
   let elasticServiceStubAdd;
@@ -229,7 +229,7 @@ describe('FixtureController', () => {
   describe('#get-fixtures()', () => {
     it('should return 200: Fixtures successfully retrieved', async () => {
       const response = await request(app)
-        .get('/get-fixtures')
+        .get('/fixture/get-fixtures')
         .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'Fixtures successfully retrieved');

@@ -2,9 +2,8 @@
 /* eslint-disable no-param-reassign */
 const _ = require('lodash');
 const moment = require('moment')();
-const cache = require('express-redis-cache')({
-  host: process.env.REDIS_HOST, auth_pass: process.env.REDIS_PASSWORD, port: process.env.REDIS_PORT,
-});
+const config = require('../config');
+const cache = require('express-redis-cache')(config.redis);
 const Team = require('./promise').TeamPromise;
 const Fixture = require('./promise').FixturePromise;
 const ResponseHelper = require('./ResponseHelper');
@@ -33,7 +32,7 @@ const FixtureController = {
       if (startDate - currentDate < 0 || endDate - currentDate < 0) return ResponseHelper.json(400, res, 'The start and end dates have to be in the future');
       if (!data.fixtureSlug) data.fixtureSlug = `${homeTeam.slug}${awayTeam.slug}`;
       const gameDate = moment.format(data.startDate);
-      const urlSlug = `${process.env.API_BASE_URL}/fixture?details=fixtureSlug=${data.fixtureSlug},startDate=${gameDate}`;
+      const urlSlug = `${config.settings.baseUrl}/fixture?details=fixtureSlug=${data.fixtureSlug},startDate=${gameDate}`;
       data.url = await FirebaseService.getShortLink(urlSlug);
       const fixture = await Fixture.create(data);
       await ElasticService.addObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
@@ -67,7 +66,6 @@ const FixtureController = {
       if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
       return ResponseHelper.json(200, res, 'Fixture successfully retrieved', fixture);
     } catch (err) {
-      console.log(err);
       return ResponseHelper.error(err, res);
     }
   },

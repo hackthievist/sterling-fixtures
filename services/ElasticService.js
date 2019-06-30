@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
 const elasticsearch = require('elasticsearch');
 const _ = require('lodash');
+const config = require('../config');
 
-const host = process.env.ES_HOST;
+const { host } = config.elasticsearch;
 
 const client = new elasticsearch.Client({
   host,
