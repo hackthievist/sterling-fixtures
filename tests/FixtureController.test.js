@@ -226,10 +226,10 @@ describe('FixtureController', () => {
     });
   });
 
-  describe('#get-fixtures()', () => {
+  describe('#getFixtures()', () => {
     it('should return 200: Fixtures successfully retrieved', async () => {
       const response = await request(app)
-        .get('/fixture/get-fixtures')
+        .get('/fixture')
         .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'Fixtures successfully retrieved');
