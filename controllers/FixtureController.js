@@ -10,7 +10,7 @@ const ResponseHelper = require('./ResponseHelper');
 const FirebaseService = require('../services/FirebaseService');
 const ElasticService = require('../services/ElasticService');
 
-const elasticIndex = `${config.elastic.ES_INDEX_PREFIX}-fixture`;
+const elasticIndex = `${config.elasticsearch.ES_INDEX_PREFIX}-fixture`;
 
 const FixtureController = {
   async create(req, res) {
