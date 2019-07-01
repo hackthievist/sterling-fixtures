@@ -1,0 +1,30 @@
+version: "2"
+services:
+  web:
+    container_name: sterling-fixtures
+    restart: always
+    build: .
+    env_file:
+      - ./docker-config/secrets.env
+      - ./docker-config/config.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+      - elasticsearch
+      - redis
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - "27017:27017"
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.2
+    ports:
+      - "9200:9200"
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - "6379:6379"
