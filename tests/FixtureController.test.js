@@ -100,7 +100,7 @@ describe('FixtureController', () => {
       const startDate = new Date();
       const endDate = new Date();
       startDate.setHours(startDate.getHours() + 2);
-      endDate.setHours(startDate.getHours() + 4);
+      endDate.setHours(endDate.getHours() + 4);
       const newFixture = fixtureProvider.getRecord({
         homeTeam: dbData.homeTeam._id, awayTeam: dbData.awayTeam._id, status: 'pending', startDate, endDate,
       });
@@ -117,7 +117,7 @@ describe('FixtureController', () => {
       const startDate = new Date();
       const endDate = new Date();
       startDate.setHours(startDate.getHours() + 2);
-      endDate.setHours(startDate.getHours() + 4);
+      endDate.setHours(endDate.getHours() + 4);
       const newFixture = fixtureProvider.getRecord({
         homeTeam: dbData.homeTeam._id, awayTeam: dbData.awayTeam._id, status: 'pending', startDate, endDate,
       });
@@ -316,7 +316,7 @@ describe('FixtureController', () => {
         const startDate = new Date();
         const endDate = new Date();
         startDate.setHours(startDate.getHours() + 2);
-        endDate.setHours(startDate.getHours() + 4);
+        endDate.setHours(endDate.getHours() + 4);
         const updateData = { startDate, endDate };
         const response = await request(app)
           .patch(`/fixture/postpone/${dbData.fixture._id}`)

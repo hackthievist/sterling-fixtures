@@ -40,6 +40,14 @@ const userSchema = new Schema({
 });
 
 userSchema.pre('save', function (next) {
+  if (this.isNew) {
+    this.createdAt = new Date();
+  }
+  this.updatedAt = new Date();
+  next();
+});
+
+userSchema.pre('save', function (next) {
   const user = this;
   if (!user.isModified('password')) return next();
   bcrypt.genSalt(SALT_ROUNDS, (err, salt) => {

@@ -89,7 +89,6 @@ const FixtureController = {
       const fixtureId = req.params.id;
       const queryData = { _id: fixtureId, isDeleted: false };
       const updateData = req.body;
-      updateData.updatedAt = new Date();
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
       if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
       await ElasticService.updateObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
@@ -131,7 +130,6 @@ const FixtureController = {
       if (endDate - startDate < 0) return ResponseHelper.json(400, res, 'The end date has to be later than the start date');
       if (foundFixture.status === 'completed') return ResponseHelper.json(400, res, 'Completed matches cannot be postponed');
       updateData.status = 'pending';
-      updateData.updatedAt = new Date();
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
       await ElasticService.updateObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
       return ResponseHelper.json(200, res, 'Fixture successfully postponed', fixture);

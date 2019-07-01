@@ -8,8 +8,6 @@ const UserController = {
   async create(req, res) {
     try {
       const data = req.body;
-      data.createdAt = new Date();
-      data.updatedAt = new Date();
       if (!data.password) return ResponseHelper.json(400, res, 'Password is required');
       if (!data.email) return ResponseHelper.json(400, res, 'Email is required');
       if (!data.userName) return ResponseHelper.json(400, res, 'Username is required');
@@ -52,7 +50,6 @@ const UserController = {
       const userId = req.user._id;
       const queryData = { _id: userId, isDeleted: false };
       const updateData = _.omit(req.body, ['role']);
-      updateData.updatedAt = new Date();
       const user = await User.findOneAndUpdate(queryData, updateData);
       if (!user) return ResponseHelper.json(404, res, 'User not found');
       return ResponseHelper.json(200, res, 'User successfully updated', user);
@@ -68,7 +65,7 @@ const UserController = {
       const foundUser = await User.findOne(queryData);
       if (!foundUser) return ResponseHelper.json(404, res, 'User not found');
       const updateData = {
-        isDeleted: true, updatedAt: new Date(), deletedAt: new Date(), email: `${foundUser.email}-${_.now()}`, userName: `${foundUser.userName}-${_.now()}`,
+        isDeleted: true, deletedAt: new Date(), email: `${foundUser.email}-${_.now()}`, userName: `${foundUser.userName}-${_.now()}`,
       };
       const user = await User.findOneAndUpdate(queryData, updateData);
       return ResponseHelper.json(200, res, 'User successfully deleted', user);

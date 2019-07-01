@@ -11,6 +11,7 @@ Sterling Fixtures API
 
 These instructions are for use without docker
 
+* Clone the repository [https://github.com/hackthievist/sterling-fixtures.git](https://github.com/hackthievist/sterling-fixtures.git)
 * Make sure that [Node.js](https://nodejs.org/) is installed.
 * Install Node.js modules with `yarn` [YarnPKG](https://yarnpkg.com/):
 ```shell
@@ -20,7 +21,8 @@ yarn install
 ## Starting App
 
 * To run the app, copy the file `.env.example` to `.env` and substitute the settings to match your development environment.
-* Start the app with `npm`:
+* Make sure `mongo`, `redis` and `elasticsearch` are installed and running if you plan on using them locally.
+* Start the app with `yarn`:
 ```shell
 yarn start
 ```
@@ -36,7 +38,12 @@ yarn test
 
 ## Docker
 ### Using Docker Standalone - Compose (Recomended for local development)
-* Copy the file `docker-config/secrets.env.example` to `docker-config/secrets.env` and substitute the settings to match your development environment.
+* Copy the files `docker-config/secrets.env.example`, `docher-config/config.env.example` to `docker-config/secrets.env`, `docker-config/config.env` and substitute the settings to match your development environment.
+
+Make sure mongodb is installed and running with IP bound to docker service `mongo`
+```shell
+mongod --bind_ip mongo
+```
 
 ```shell
 docker-compose up -d
@@ -57,3 +64,21 @@ docker-compose down
 ## Visit App
 
 * Navigate to [https://sterlingfixtures.herokuapp.com](https://sterlingfixtures.herokuapp.com) or [http://localhost:3000](http://localhost:3000)(docker standalone)
+
+
+## Tests
+
+* There are 3 test suites, with 51 test cases for Fixture, Team and User. They can be found in tests/
+
+## Stack
+
+* Backend Language + Framework: Nodejs + Express
+* Database: MongoDB
+* Testing Framework: Jest
+* Hosting Server: Heroku
+* Container Platform: Docker
+* Session Management: Redis
+* Authentication/Authorization: Bearer Token/JWT
+
+## Extras
+* Rate Limit: Requests to the fixtures-api are limited to 50 per 15 minutes.
