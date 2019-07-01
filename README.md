@@ -56,4 +56,4 @@ docker-compose down
 
 ## Visit App
 
-* Navigate to [https://sterlingfixtures.herokuapp.com](https://sterlingfixtures.herokuapp.com)(minikube) or [http://localhost:3000](http://localhost:3000)(docker standalone)
+* Navigate to [https://sterlingfixtures.herokuapp.com](https://sterlingfixtures.herokuapp.com) or [http://localhost:3000](http://localhost:3000)(docker standalone)
