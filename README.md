@@ -18,6 +18,10 @@ These instructions are for use without docker
 yarn install
 ```
 
+## Documentation
+
+* The API documentation with Postman can be found [https://documenter.getpostman.com/view/5455096/S1a7X6Fb](here)
+
 ## Starting App
 
 * To run the app, copy the file `.env.example` to `.env` and substitute the settings to match your development environment.
@@ -38,7 +42,7 @@ yarn test
 
 ## Docker
 ### Using Docker Standalone - Compose (Recomended for local development)
-* Copy the files `docker-config/secrets.env.example`, `docher-config/config.env.example` to `docker-config/secrets.env`, `docker-config/config.env` and substitute the settings to match your development environment.
+* Copy the files `docker-config/secrets.env.example`, `docker-config/config.env.example` to `docker-config/secrets.env`, `docker-config/config.env` and substitute the settings to match your development environment.
 
 Make sure mongodb is installed and running with IP bound to docker service `mongo`
 ```shell

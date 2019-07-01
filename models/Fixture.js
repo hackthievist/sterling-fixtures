@@ -23,6 +23,17 @@ const fixtureSchema = new Schema({
     default: 'pending',
     enum: ['pending', 'ongoing', 'cancelled', 'completed'],
   },
+  homeTeamScore: {
+    type: String,
+    default: 0,
+  },
+  awayTeamScore: {
+    type: String,
+    default: 0,
+  },
+  gameScore: {
+    type: String,
+  },
   startDate: {
     type: Date,
     required: true,
@@ -49,6 +60,7 @@ fixtureSchema.pre('save', function (next) {
     this.createdAt = new Date();
   }
   this.updatedAt = new Date();
+  this.gameScore = `${this.homeTeamScore}-${this.awayTeamScore}`;
   next();
 });
 
