@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const config = require('../config');
-const cache = require('express-redis-cache')(config.redis);
+const redisClient = require('redis').createClient({ url: config.redis.url });
+const cache = require('express-redis-cache')({ client: redisClient });
 const User = require('./promise').UserPromise;
 const ResponseHelper = require('./ResponseHelper');
 

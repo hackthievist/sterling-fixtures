@@ -1,5 +1,6 @@
 const config = require('../config');
-const cache = require('express-redis-cache')(config.redis);
+const redisClient = require('redis').createClient({ url: config.redis.url });
+const cache = require('express-redis-cache')({ client: redisClient });
 const _ = require('lodash');
 const Team = require('./promise').TeamPromise;
 const ResponseHelper = require('./ResponseHelper');

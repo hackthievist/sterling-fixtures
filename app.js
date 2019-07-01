@@ -5,7 +5,12 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const redis = require('redis');
 require('dotenv').config();
+
+const redisClient = redis.createClient({ url: process.env.REDIS_URL });
+const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
 
 const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
@@ -17,6 +22,20 @@ const searchRouter = require('./routes/search');
 const database = process.env.NODE_ENV !== 'test' ? process.env.MONGO_URI : process.env.MONGO_TEST_URI;
 
 const app = express();
+
+app.use(session({
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.REDIS_SECRET,
+  resave: false,
+  saveUninitialized: true,
+}));
+
+app.use(function (req, res, next) {
+if (!req.session) {
+  return next(new Error('oh no')) // handle error
+}
+next() // otherwise continue
+})
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

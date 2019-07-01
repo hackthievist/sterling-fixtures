@@ -18,9 +18,7 @@ module.exports = {
     appUrl: process.env.FIREBASE_DYNAMIC_LINK_APP_URL,
   },
   redis: {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    auth_pass: process.env.REDIS_PASSWORD,
+    url: process.env.REDIS_URL,
   },
   elasticsearch: {
     host: process.env.ELASTIC_HOST,
