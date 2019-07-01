@@ -3,10 +3,10 @@ LABEL MAINTAINER="Ifeoluwa Sobogun <sobogunifeoluwa@gmail.com>"
 
 WORKDIR /www
 
-ADD application/package.json application/yarn.lock /www/
+ADD package.json yarn.lock /www/
 RUN yarn install \
 	&& yarn cache clean;
 
-ADD application /www
+ADD . /www
 
 CMD ["yarn", "start"]
