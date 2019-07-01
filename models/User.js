@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const SALT_ROUNDS = 10;
 

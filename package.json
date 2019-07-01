@@ -10,12 +10,12 @@
   },
   "husky": {
     "hooks": {
-        "pre-commit": "yarn lint",
-        "pre-push": "yarn test"
+      "pre-commit": "yarn lint",
+      "pre-push": "yarn test"
     }
-},
+  },
   "dependencies": {
-    "bcrypt": "^3.0.6",
+    "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.5",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
