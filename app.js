@@ -2,10 +2,12 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const redis = require('redis');
+const cors = require('cors');
 require('dotenv').config();
 
 const redisClient = redis.createClient({ url: process.env.REDIS_URL });
@@ -29,6 +31,10 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
 }));
+
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(function (req, res, next) {
 if (!req.session) {
