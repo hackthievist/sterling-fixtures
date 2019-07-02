@@ -1,6 +1,6 @@
 module.exports = {
   settings: {
-    baseUrl: process.env.BASE_URL,
+    baseUrl: process.env.API_BASE_URL,
     port: process.env.PORT,
   },
   connection: {

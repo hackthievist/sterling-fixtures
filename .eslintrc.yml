@@ -23,3 +23,4 @@ rules:
   no-plusplus: 0
   func-names: 0
   import/order: 0
+  no-await-in-loop: 0
