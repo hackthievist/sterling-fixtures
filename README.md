@@ -20,7 +20,7 @@ yarn install
 
 ## Documentation
 
-* The API documentation with Postman can be found [https://documenter.getpostman.com/view/5455096/S1a7X6Fb](here)
+* The API documentation with Postman can be found [here](https://documenter.getpostman.com/view/5455096/S1a7X6Fb)
 
 ## Starting App
 
@@ -72,7 +72,7 @@ docker-compose down
 
 ## Tests
 
-* There are 3 test suites, with 51 test cases for Fixture, Team and User. They can be found in tests/
+* There are 3 test suites, with 52 test cases for Fixture, Team and User. They can be found in tests/
 
 ## Stack
 
@@ -83,6 +83,7 @@ docker-compose down
 * Container Platform: Docker
 * Session Management: Redis
 * Authentication/Authorization: Bearer Token/JWT
+* Dynamic Link Generator: Firebase Dynamic Links
 
 ## Extras
 * Rate Limit: Requests to the fixtures-api are limited to 50 per 15 minutes.
