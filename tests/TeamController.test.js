@@ -167,7 +167,7 @@ describe('TeamController', () => {
   describe('#list()', () => {
     it('should return 200: Teams successfully retrieved', async () => {
       const response = await request(app)
-        .get('/team')
+        .get('/all-teams')
         .set('Authorization', `Bearer ${tokenData}`)
         .expect(200);
       expect(response.body).to.be.an('object').with.property('message', 'Teams successfully retrieved');
@@ -178,7 +178,7 @@ describe('TeamController', () => {
 
     it('should return 401: User from token does not exist', async () => {
       const response = await request(app)
-        .get('/team')
+        .get('/all-teams')
         .set('Authorization', `Bearer ${invalidTokenData}`)
         .expect(401);
       expect(response.body).to.be.an('object').with.property('message', 'User from token does not exist');
