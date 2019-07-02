@@ -1,6 +1,7 @@
 const express = require('express');
 const { isAuthenticated } = require('../policies/authenticated');
 const FixtureController = require('../controllers/FixtureController');
+const TeamController = require('../controllers/TeamController');
 const { limiter } = require('../limiter');
 
 const router = express.Router();
@@ -11,6 +12,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/all-fixtures', isAuthenticated, limiter, FixtureController.getFixtures);
+router.get('/all-teams', isAuthenticated, limiter, TeamController.list);
 
 
 module.exports = router;
