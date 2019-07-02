@@ -3,3 +3,4 @@ node_modules
 docker-config/secrets.env
 docker-config/config.env
 yarn-error.log
+yarn.lock
