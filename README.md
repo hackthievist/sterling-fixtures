@@ -20,7 +20,7 @@ yarn install
 
 ## Documentation
 
-* The API documentation with Postman can be found [here](https://documenter.getpostman.com/view/5455096/S1a7X6Fb)
+* The API documentation with Postman can be found [here](https://documenter.getpostman.com/view/2585442/S1a8y4Ln)
 
 ## Starting App
 
