@@ -1,4 +1,7 @@
 const express = require('express');
+const { isAuthenticated } = require('../policies/authenticated');
+const FixtureController = require('../controllers/FixtureController');
+const { limiter } = require('../limiter');
 
 const router = express.Router();
 
@@ -6,5 +9,8 @@ const router = express.Router();
 router.get('/', (req, res) => {
   res.render('index', { title: 'Sterling Fixtures' });
 });
+
+router.get('/all-fixtures', isAuthenticated, limiter, FixtureController.getFixtures);
+
 
 module.exports = router;

@@ -94,7 +94,7 @@ describe('TeamController', () => {
 
     it('should return 201: Team created successfully (no slug provided, should generate slug)', async () => {
       delete newTeam.slug;
-      const newTeamSlug = newTeam.name.substr(1, 3).toUpperCase();
+      const newTeamSlug = newTeam.name.substr(0, 3).toUpperCase();
       const response = await request(app)
         .post('/team')
         .set('Authorization', `Bearer ${tokenData}`)
