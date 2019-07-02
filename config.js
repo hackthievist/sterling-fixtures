@@ -19,6 +19,7 @@ module.exports = {
   },
   redis: {
     url: process.env.REDIS_URL,
+    secret: process.env.REDIS_SECRET,
   },
   elasticsearch: {
     host: process.env.ELASTIC_HOST,
