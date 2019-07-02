@@ -133,9 +133,20 @@ describe('FixtureController', () => {
       expect(response.body.data.fixtureSlug).to.be.equal(newFixtureSlug);
     });
 
-    it('should return 400: Please provide valid home and away teams', async () => {
+    it('should return 400: Please provide home and away teams', async () => {
       const newFixture = fixtureProvider.getRecord({ homeTeam: dbData.homeTeam._id, awayTeam: dbData.awayTeam._id, status: 'pending' });
       delete newFixture.homeTeam;
+      const response = await request(app)
+        .post('/fixture')
+        .set('Authorization', `Bearer ${tokenData}`)
+        .expect(400)
+        .send(newFixture);
+      expect(response.body).to.be.an('object').with.property('message', 'Please provide home and away teams');
+    });
+
+    it('should return 400: Please provide valid home and away teams', async () => {
+      const awayTeam = mongoose.Types.ObjectId(fixtureProvider.getId());
+      const newFixture = fixtureProvider.getRecord({ homeTeam: dbData.homeTeam._id, awayTeam, status: 'pending' });
       const response = await request(app)
         .post('/fixture')
         .set('Authorization', `Bearer ${tokenData}`)

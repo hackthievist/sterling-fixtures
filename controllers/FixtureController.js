@@ -101,8 +101,14 @@ const FixtureController = {
       const fixtureId = req.params.id;
       const queryData = { _id: fixtureId, isDeleted: false };
       const updateData = req.body;
+      const foundFixture = await Fixture.findOne(queryData);
+      if (!foundFixture) return ResponseHelper.json(404, res, 'Fixture not found');
+      const gameScore = foundFixture.gameScore;
+      const splitScore = gameScore.split('-');
+      splitScore[0] = _.has(updateData, 'homeTeamScore') ? updateData.homeTeamScore : splitScore[0];
+      splitScore[1] = _.has(updateData, 'awayTeamScore') ? updateData.awayTeamScore : splitScore[1];
+      if (!updateData.gameScore) updateData.gameScore = splitScore.join('-');
       const fixture = await Fixture.findOneAndUpdate(queryData, updateData);
-      if (!fixture) return ResponseHelper.json(404, res, 'Fixture not found');
       await ElasticService.updateObject(elasticIndex, 'fixture', fixture, ['homeTeam', 'awayTeam', 'status', 'startDate', 'endDate', 'fixtureSlug', 'isDeleted']);
       return ResponseHelper.json(200, res, 'Fixture successfully updated', fixture);
     } catch (err) {
