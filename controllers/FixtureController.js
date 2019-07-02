@@ -9,6 +9,7 @@ const Team = require('./promise').TeamPromise;
 const Fixture = require('./promise').FixturePromise;
 const ResponseHelper = require('./ResponseHelper');
 const FirebaseService = require('../services/FirebaseService');
+const BulkService = require('../services/BulkService');
 const ElasticService = require('../services/ElasticService');
 
 const elasticIndex = `${config.elasticsearch.indexPrefix}-fixture`;
@@ -17,6 +18,16 @@ const FixtureController = {
   async create(req, res) {
     try {
       const data = req.body;
+      if (Array.isArray(data)) {
+        const response = await BulkService.create(data, req, 'fixture');
+        if (response.failed.length && response.success.length) {
+          return ResponseHelper.json(207, res, 'Some fixtures were successfully created', response);
+        } if (!response.success.length && response.failed.length) {
+          return ResponseHelper.json(400, res, 'Creation of fixtures failed', response);
+        }
+        return ResponseHelper.json(200, res, 'Fixtures created successfully', response);
+      }
+      if (!data.homeTeam || !data.awayTeam) return ResponseHelper.json(400, res, 'Please provide home and away teams');
       const homeTeam = await Team.findOne({ _id: data.homeTeam, isDeleted: false });
       const awayTeam = await Team.findOne({ _id: data.awayTeam, isDeleted: false });
       if (!homeTeam || !awayTeam) return ResponseHelper.json(400, res, 'Please provide valid home and away teams');

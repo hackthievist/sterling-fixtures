@@ -11,6 +11,8 @@ function getRecord(overrides) {
     awayTeam: chance.string({ pool: 'abcdefghijklmnopqrstuvwxyz', length: 12 }),
     fixtureSlug: chance.string({ length: 6, pool: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' }),
     status: chance.pickone(['pending', 'ongoing', 'cancelled', 'completed']),
+    homeTeamScore: chance.integer({ min: 0, max: 8 }),
+    awayTeamScore: chance.integer({ min: 0, max: 8 }),
     startDate: chance.date(),
     endDate: chance.date(),
     url: chance.url(),

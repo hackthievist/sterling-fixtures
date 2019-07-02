@@ -6,6 +6,7 @@ const Team = require('./promise').TeamPromise;
 const ResponseHelper = require('./ResponseHelper');
 const ElasticService = require('../services/ElasticService');
 const helpers = require('../helpers');
+const BulkService = require('../services/BulkService');
 
 const elasticIndex = `${config.elasticsearch.indexPrefix}-team`;
 
@@ -13,6 +14,15 @@ const TeamController = {
   async create(req, res) {
     try {
       const data = req.body;
+      if (Array.isArray(data)) {
+        const response = await BulkService.create(data, req, 'team');
+        if (response.failed.length && response.success.length) {
+          return ResponseHelper.json(207, res, 'Some teams were successfully created', response);
+        } if (!response.success.length && response.failed.length) {
+          return ResponseHelper.json(400, res, 'Creation of teams failed', response);
+        }
+        return ResponseHelper.json(200, res, 'Teams created successfully', response);
+      }
       if (!data.name) return ResponseHelper.json(400, res, 'Team name is required');
       if (!data.slug) data.slug = helpers.cleanSlug(_.pick(data, ['name', 'slug']));
       const team = await Team.create(data);
