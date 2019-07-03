@@ -1,6 +1,6 @@
 .env
 node_modules
-docker-config/secrets.env
-docker-config/config.env
 yarn-error.log
 yarn.lock
+docker-config/config.env
+docker-config/secrets.env
